@@ -124,6 +124,9 @@ private final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, S
         guard let speechRecognizer = speechRecognizer
         else { throw SpeechRecognitionEngineError.speechRecognizerInitFailed }
 
+
+        guard speechRecognizer.isAvailable else { throw SpeechRecognitionEngineError.notAvailable }
+
         // Create a recognition task for the speech recognition session.
         // Keep a reference to the task so that it can be canceled.
         recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) {
