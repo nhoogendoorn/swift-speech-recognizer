@@ -139,8 +139,12 @@ private final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, S
 
                 self.recognitionRequest = nil
                 self.recognitionTask = nil
+                if let error {
+                    self.recognitionStatus(.stopped(.failure(error)))
+                } else {
+                    self.recognitionStatus(.stopped(.success(())))
+                }
 
-                self.recognitionStatus(.stopped)
             }
         }
 
@@ -161,7 +165,7 @@ private final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, S
             recognitionRequest?.endAudio()
             recognitionStatus(.stopping)
         } else {
-            recognitionStatus(.stopped)
+            recognitionStatus(.stopped(.success(())))
         }
     }
 

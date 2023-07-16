@@ -76,7 +76,7 @@ extension SwiftSpeechRecognizer {
                 continuation.yield(.stopping)
                 Task {
                     try await Task.sleep(nanoseconds: UInt64(400_000_000))
-                    continuation.yield(.stopped)
+                    continuation.yield(.stopped(.success(())))
                 }
             }
         }
@@ -130,18 +130,15 @@ struct SwiftSpeechDependencyPreviews: PreviewProvider {
         var body: some View {
             VStack {
                 Button {
-                    if [.notStarted, .stopped].contains(model.recognitionStatus) {
-                        model.startRecording()
-                    } else {
-                        model.stopRecording()
+                    switch model.recognitionStatus {
+                    case .notStarted, .stopped: model.startRecording()
+                    default: model.stopRecording()
                     }
                 } label: {
-                    if [.notStarted, .stopped].contains(model.recognitionStatus) {
-                        Text("Start recording").multilineTextAlignment(.center)
-                    } else if model.recognitionStatus == .stopping {
-                        Text("Stopping")
-                    } else {
-                        Text("Stop recording")
+                    switch model.recognitionStatus {
+                    case .notStarted, .stopped: Text("Start recording").multilineTextAlignment(.center)
+                    case .stopping: Text("Stopping")
+                    default: Text("Stop recording")
                     }
                 }
                 .disabled(model.recognitionStatus == .stopping)
