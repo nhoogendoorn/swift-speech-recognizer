@@ -23,6 +23,9 @@ public struct SwiftSpeechRecognizer {
     /// Shortcut to access with ease to the received new utterance (already filtered)
     public var newUtterance: () -> AsyncStream<String>
 
+    /// Returns a chunk of recorded data.
+    public var newBuffer: () -> AsyncStream<AVAudioPCMBuffer>
+
     /// Ask user if you can use Microphone for Speech Recognition
     /// You'll need to subscribe to `authorizationStatusPublisher` to know the user choice
     public var requestAuthorization: () -> Void
@@ -37,6 +40,7 @@ public struct SwiftSpeechRecognizer {
     public init(
         authorizationStatus: @escaping () -> AsyncStream<SFSpeechRecognizerAuthorizationStatus>,
         recognizedUtterance: @escaping () -> AsyncStream<String?>,
+        newBuffer: @escaping () -> AsyncStream<AVAudioPCMBuffer>,
         recognitionStatus: @escaping () -> AsyncStream<SpeechRecognitionStatus>,
         isRecognitionAvailable: @escaping () -> AsyncStream<Bool>,
         newUtterance: @escaping () -> AsyncStream<String>,
@@ -52,6 +56,7 @@ public struct SwiftSpeechRecognizer {
         self.requestAuthorization = requestAuthorization
         self.startRecording = startRecording
         self.stopRecording = stopRecording
+        self.newBuffer = newBuffer
     }
 }
 
@@ -76,6 +81,7 @@ private final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, S
     var authorizationStatus: (SFSpeechRecognizerAuthorizationStatus) -> Void = { _ in }
     var recognizedUtterance: (String?) -> Void = { _ in }
     var recognitionStatus: (SpeechRecognitionStatus) -> Void = { _ in }
+    var recordedData: (AVAudioPCMBuffer) -> Void = { _ in }
 
     /// Whenever the availability of speech recognition services changes, this value will change
     /// For instance if the internet connection is lost, isRecognitionAvailable will change to `false`
@@ -150,7 +156,8 @@ private final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, S
 
         // Configure the microphone input.
         let recordingFormat = inputNode.outputFormat(forBus: 0)
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { (buffer: AVAudioPCMBuffer, _) in
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [recordedData] (buffer: AVAudioPCMBuffer, _) in
+            recordedData(buffer)
             recognitionRequest.append(buffer)
         }
 
@@ -200,9 +207,14 @@ public extension SwiftSpeechRecognizer {
             }
         }
 
+        let recordedData = AsyncStream { continuation in
+            engine.recordedData = { continuation.yield($0) }
+        }
+
         return Self(
             authorizationStatus: { authorizationStatus },
             recognizedUtterance: { recognizedUtterance },
+            newBuffer: { recordedData },
             recognitionStatus: { recognitionStatus },
             isRecognitionAvailable: { isRecognitionAvailable },
             newUtterance: { newUtterance },
@@ -236,9 +248,14 @@ public extension SwiftSpeechRecognizer {
             }
         }
 
+        let recordedData = AsyncStream { continuation in
+            engine.recordedData = { continuation.yield($0) }
+        }
+
         return Self(
             authorizationStatus: { authorizationStatus },
             recognizedUtterance: { recognizedUtterance },
+            newBuffer: { recordedData },
             recognitionStatus: { recognitionStatus },
             isRecognitionAvailable: { isRecognitionAvailable },
             newUtterance: { newUtterance },

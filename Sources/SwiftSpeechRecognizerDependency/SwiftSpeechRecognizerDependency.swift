@@ -11,6 +11,7 @@ extension SwiftSpeechRecognizer {
     static let test = Self(
         authorizationStatus: unimplemented("SwiftSpeechRecognizer.authorizationStatus"),
         recognizedUtterance: unimplemented("SwiftSpeechRecognizer.recognizedUtterance"),
+        newBuffer: unimplemented("SwiftSpeechRecognizer.newBuffer"),
         recognitionStatus: unimplemented("SwiftSpeechRecognizer.recognitionStatus"),
         isRecognitionAvailable: unimplemented("SwiftSpeechRecognizer.isRecognitionAvailable"),
         newUtterance: unimplemented("SwiftSpeechRecognizer.newUtterance"),
@@ -41,6 +42,12 @@ extension SwiftSpeechRecognizer {
         let stopRecording = {
             for stopRecordingCallback in stopRecordingCallbacks {
                 stopRecordingCallback()
+            }
+        }
+
+        let newBuffer = AsyncStream<AVAudioPCMBuffer> { continuation in
+            for i in (0..<2) {
+                continuation.yield(AVAudioPCMBuffer())
             }
         }
 
@@ -93,6 +100,7 @@ extension SwiftSpeechRecognizer {
         return Self(
             authorizationStatus: { authorizationStatus },
             recognizedUtterance: { recognizedUtterance },
+            newBuffer: { newBuffer },
             recognitionStatus: { recognitionStatus },
             isRecognitionAvailable: { isRecognitionAvailable },
             newUtterance: { newUtterance },
