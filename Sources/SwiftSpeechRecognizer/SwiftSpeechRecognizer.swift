@@ -57,6 +57,20 @@ public struct SwiftSpeechRecognizer {
 
 // See: https://developer.apple.com/documentation/speech/recognizing_speech_in_live_audio
 private final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, SFSpeechRecognizerDelegate {
+    internal init(
+        authorizationStatus: @escaping (SFSpeechRecognizerAuthorizationStatus) -> Void = { _ in },
+        recognizedUtterance: @escaping (String?) -> Void = { _ in },
+        recognitionStatus: @escaping (SpeechRecognitionStatus) -> Void = { _ in },
+        isRecognitionAvailable: @escaping (Bool) -> Void = { _ in },
+        locale: Locale
+    ) {
+        self.authorizationStatus = authorizationStatus
+        self.recognizedUtterance = recognizedUtterance
+        self.recognitionStatus = recognitionStatus
+        self.isRecognitionAvailable = isRecognitionAvailable
+        self.speechRecognizer = SFSpeechRecognizer(locale: locale)
+    }
+
     var authorizationStatus: (SFSpeechRecognizerAuthorizationStatus) -> Void = { _ in }
     var recognizedUtterance: (String?) -> Void = { _ in }
     var recognitionStatus: (SpeechRecognitionStatus) -> Void = { _ in }
@@ -65,7 +79,7 @@ private final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, S
     /// For instance if the internet connection is lost, isRecognitionAvailable will change to `false`
     var isRecognitionAvailable: (Bool) -> Void = { _ in }
 
-    private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-GB"))
+    private let speechRecognizer: SFSpeechRecognizer?
     private let audioEngine = AVAudioEngine()
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
@@ -155,8 +169,45 @@ private final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, S
 }
 
 public extension SwiftSpeechRecognizer {
+    static func live(locale: Locale) -> Self {
+        let engine = SpeechRecognitionSpeechEngine(locale: locale)
+
+        let authorizationStatus = AsyncStream { continuation in
+            engine.authorizationStatus = { continuation.yield($0) }
+        }
+        let recognizedUtterance = AsyncStream { continuation in
+            engine.recognizedUtterance = { continuation.yield($0) }
+        }
+        let recognitionStatus = AsyncStream { continuation in
+            engine.recognitionStatus = { continuation.yield($0) }
+        }
+        let isRecognitionAvailable = AsyncStream { continuation in
+            engine.isRecognitionAvailable = { continuation.yield($0) }
+        }
+        let newUtterance = AsyncStream { continuation in
+            Task {
+                var lastUtterance: String? = nil
+                for await utterance in recognizedUtterance.compactMap({ $0 }) where lastUtterance != utterance {
+                    continuation.yield(utterance)
+                    lastUtterance = utterance
+                }
+            }
+        }
+
+        return Self(
+            authorizationStatus: { authorizationStatus },
+            recognizedUtterance: { recognizedUtterance },
+            recognitionStatus: { recognitionStatus },
+            isRecognitionAvailable: { isRecognitionAvailable },
+            newUtterance: { newUtterance },
+            requestAuthorization: { engine.requestAuthorization() },
+            startRecording: { try engine.startRecording() },
+            stopRecording: { engine.stopRecording() }
+        )
+    }
+
     static var live: Self {
-        let engine = SpeechRecognitionSpeechEngine()
+        let engine = SpeechRecognitionSpeechEngine(locale: .current)
         let authorizationStatus = AsyncStream { continuation in
             engine.authorizationStatus = { continuation.yield($0) }
         }
