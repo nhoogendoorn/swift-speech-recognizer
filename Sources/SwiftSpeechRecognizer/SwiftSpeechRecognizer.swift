@@ -68,7 +68,9 @@ private final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, S
         self.recognizedUtterance = recognizedUtterance
         self.recognitionStatus = recognitionStatus
         self.isRecognitionAvailable = isRecognitionAvailable
-        self.speechRecognizer = SFSpeechRecognizer(locale: locale)
+        var recognizer = SFSpeechRecognizer(locale: locale)
+        recognizer?.defaultTaskHint = .dictation
+        self.speechRecognizer = recognizer
     }
 
     var authorizationStatus: (SFSpeechRecognizerAuthorizationStatus) -> Void = { _ in }
