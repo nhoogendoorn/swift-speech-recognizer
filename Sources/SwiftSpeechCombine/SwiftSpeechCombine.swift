@@ -50,10 +50,17 @@ public final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, SF
     /// For instance if the internet connection is lost, isRecognitionAvailable will change to `false`
     @Published var isRecognitionAvailable: Bool = false
 
-    public let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-GB"))
+    public var speechRecognizer: SFSpeechRecognizer?
     private let audioEngine = AVAudioEngine()
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
+
+    convenience init(locale: Locale) {
+        self.init()
+        let recognizer = SFSpeechRecognizer(locale: locale)!
+        recognizer.defaultTaskHint = .dictation
+        speechRecognizer = recognizer
+    }
 
     public override init() { }
 
