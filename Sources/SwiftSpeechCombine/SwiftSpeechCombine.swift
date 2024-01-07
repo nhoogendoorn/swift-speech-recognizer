@@ -25,7 +25,7 @@ public protocol SpeechRecognitionEngine {
     /// Shortcut to access with ease to the published new utterance (already filtered)
     var newUtterancePublisher: AnyPublisher<String, Never> { get }
 
-    var newAudioBuffer: AnyPublisher<AVAudioPCMBuffer?, Never> { get }
+    var newAudioBuffer: AnyPublisher<AVAudioPCMBuffer, Never> { get }
 
     /// Ask user if you can use Microphone for Speech Recognition
     /// You'll need to subscribe to `authorizationStatusPublisher` to know the user choice
@@ -44,13 +44,13 @@ public final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, SF
     @Published var authorizationStatus: SFSpeechRecognizerAuthorizationStatus?
     @Published var recognizedUtterance: String?
     @Published var recognitionStatus: SpeechRecognitionStatus = .notStarted
-    @Published var audioBuffer: AVAudioPCMBuffer?
+    var audioBufferSubject = PassthroughSubject<AVAudioPCMBuffer, Never>()
 
     /// Whenever the availability of speech recognition services changes, this value will change
     /// For instance if the internet connection is lost, isRecognitionAvailable will change to `false`
     @Published var isRecognitionAvailable: Bool = false
 
-    private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-GB"))
+    public let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-GB"))
     private let audioEngine = AVAudioEngine()
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
@@ -127,8 +127,9 @@ public final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, SF
 
         // Configure the microphone input.
         let recordingFormat = inputNode.outputFormat(forBus: 0)
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { (buffer: AVAudioPCMBuffer, _) in
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [weak self] (buffer: AVAudioPCMBuffer, _) in
             recognitionRequest.append(buffer)
+            self?.audioBufferSubject.send(buffer)
         }
 
         audioEngine.prepare()
@@ -179,7 +180,8 @@ public extension SpeechRecognitionSpeechEngine {
             .eraseToAnyPublisher()
     }
 
-    var newAudioBuffer: AnyPublisher<AVAudioPCMBuffer?, Never> {
-        $audioBuffer.eraseToAnyPublisher()
+    var newAudioBuffer: AnyPublisher<AVAudioPCMBuffer, Never> {
+        audioBufferSubject.eraseToAnyPublisher()
+//        $audioBuffer.eraseToAnyPublisher()
     }
 }
