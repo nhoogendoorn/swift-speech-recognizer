@@ -186,12 +186,12 @@ private final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, S
 
 public extension SwiftSpeechRecognizer {
 
-    static private let engine = SpeechRecognitionSpeechEngine(locale: .current)
+//    static private let engine = SpeechRecognitionSpeechEngine(locale: .current)
 
     static func live(locale: Locale) -> Self {
-        let recognizer = SFSpeechRecognizer(locale: locale)
-        recognizer?.defaultTaskHint = .dictation
-        engine.speechRecognizer = recognizer
+//        let recognizer = SFSpeechRecognizer(locale: locale)
+//        recognizer?.defaultTaskHint = .dictation
+//        engine.speechRecognizer = recognizer
 
         let authorizationStatus: AsyncStream<SFSpeechRecognizerAuthorizationStatus> = AsyncStream { continuation in
             continuation.finish()
@@ -232,9 +232,15 @@ public extension SwiftSpeechRecognizer {
             recognitionStatus: { recognitionStatus },
             isRecognitionAvailable: { isRecognitionAvailable },
             newUtterance: { newUtterance },
-            requestAuthorization: { engine.requestAuthorization() },
-            startRecording: { try engine.startRecording() },
-            stopRecording: { engine.stopRecording() }
+            requestAuthorization: {
+//                engine.requestAuthorization()
+            },
+            startRecording: {
+//                try engine.startRecording()
+            },
+            stopRecording: {
+//                engine.stopRecording()
+            }
         )
     }
 
