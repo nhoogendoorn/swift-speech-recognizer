@@ -37,6 +37,8 @@ public protocol SpeechRecognitionEngine {
 
     /// Stop the Speech Recognition process manually
     func stopRecording()
+
+    func toggle() throws
 }
 
 // See: https://developer.apple.com/documentation/speech/recognizing_speech_in_live_audio
@@ -150,7 +152,16 @@ public final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, SF
             recognitionRequest?.endAudio()
             recognitionStatus = .stopping
         } else {
+            recognitionRequest?.endAudio()
             recognitionStatus = .stopped(.success(()))
+        }
+    }
+
+    public func toggle() throws {
+        if audioEngine.isRunning {
+            audioEngine.pause()
+        } else {
+            try audioEngine.start()
         }
     }
 }
