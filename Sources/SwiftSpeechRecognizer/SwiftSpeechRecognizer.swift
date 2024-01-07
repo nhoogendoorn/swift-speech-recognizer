@@ -186,9 +186,10 @@ private final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, S
 
 public extension SwiftSpeechRecognizer {
 
-//    static private let engine = SpeechRecognitionSpeechEngine(locale: .current)
+//    static private
 
     static func live(locale: Locale) -> Self {
+        let engine = SpeechRecognitionSpeechEngine(locale: .current)
 //        let recognizer = SFSpeechRecognizer(locale: locale)
 //        recognizer?.defaultTaskHint = .dictation
 //        engine.speechRecognizer = recognizer
