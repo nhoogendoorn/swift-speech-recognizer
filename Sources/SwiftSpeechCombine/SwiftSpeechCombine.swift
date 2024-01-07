@@ -55,7 +55,7 @@ public final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, SF
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
 
-    convenience init(locale: Locale) {
+    public convenience init(locale: Locale) {
         self.init()
         let recognizer = SFSpeechRecognizer(locale: locale)!
         recognizer.defaultTaskHint = .dictation
