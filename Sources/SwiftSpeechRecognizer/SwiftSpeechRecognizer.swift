@@ -99,74 +99,74 @@ private final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, S
     }
 
     func startRecording() throws {
-        guard !audioEngine.isRunning
-        else { return stopRecording() }
-
-        // Cancel the previous task if it's running.
-        recognitionTask?.cancel()
-        recognitionTask = nil
-        recognizedUtterance(nil)
-
-        // Configure the audio session for the app.
-        let audioSession = AVAudioSession.sharedInstance()
-        try audioSession.setCategory(.playAndRecord, mode: .measurement, options: .duckOthers)
-        try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
-        let inputNode = audioEngine.inputNode
-
-        // Create and configure the speech recognition request.
-        recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
-        guard let recognitionRequest = recognitionRequest
-        else { throw SpeechRecognitionEngineError.speechAudioBufferRecognitionRequestInitFailed }
-        recognitionRequest.shouldReportPartialResults = true
-        // Make some test, we could probably keep all speech recognition data on the devices
-        // recognitionRequest.requiresOnDeviceRecognition = true
-
-        guard let speechRecognizer = speechRecognizer
-        else { throw SpeechRecognitionEngineError.speechRecognizerInitFailed }
-
-
-        guard speechRecognizer.isAvailable else { throw SpeechRecognitionEngineError.notAvailable }
-
-        // Create a recognition task for the speech recognition session.
-        // Keep a reference to the task so that it can be canceled.
-        recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) {
-            @MainActor [weak self] result, error in
-            guard let self = self else { return }
-
-            var isFinal = false
-
-            if let result = result {
-                // Update the text view with the results
-                self.recognizedUtterance(result.bestTranscription.formattedString)
-                isFinal = result.isFinal
-            }
-
-            if error != nil || isFinal {
-                // Stop recognizing speech if there is a problem.
-                self.audioEngine.stop()
-                inputNode.removeTap(onBus: 0)
-
-                self.recognitionRequest = nil
-                self.recognitionTask = nil
-                if let error {
-                    self.recognitionStatus(.stopped(.failure(error)))
-                } else {
-                    self.recognitionStatus(.stopped(.success(())))
-                }
-
-            }
-        }
-
-        // Configure the microphone input.
-        let recordingFormat = inputNode.outputFormat(forBus: 0)
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [recordedData] (buffer: AVAudioPCMBuffer, _) in
-            recordedData(buffer)
-            recognitionRequest.append(buffer)
-        }
-
-        audioEngine.prepare()
-        try audioEngine.start()
-        recognitionStatus(.recording)
+//        guard !audioEngine.isRunning
+//        else { return stopRecording() }
+//
+//        // Cancel the previous task if it's running.
+//        recognitionTask?.cancel()
+//        recognitionTask = nil
+//        recognizedUtterance(nil)
+//
+//        // Configure the audio session for the app.
+//        let audioSession = AVAudioSession.sharedInstance()
+//        try audioSession.setCategory(.playAndRecord, mode: .measurement, options: .duckOthers)
+//        try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+//        let inputNode = audioEngine.inputNode
+//
+//        // Create and configure the speech recognition request.
+//        recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
+//        guard let recognitionRequest = recognitionRequest
+//        else { throw SpeechRecognitionEngineError.speechAudioBufferRecognitionRequestInitFailed }
+//        recognitionRequest.shouldReportPartialResults = true
+//        // Make some test, we could probably keep all speech recognition data on the devices
+//        // recognitionRequest.requiresOnDeviceRecognition = true
+//
+//        guard let speechRecognizer = speechRecognizer
+//        else { throw SpeechRecognitionEngineError.speechRecognizerInitFailed }
+//
+//
+//        guard speechRecognizer.isAvailable else { throw SpeechRecognitionEngineError.notAvailable }
+//
+//        // Create a recognition task for the speech recognition session.
+//        // Keep a reference to the task so that it can be canceled.
+//        recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) {
+//            @MainActor [weak self] result, error in
+//            guard let self = self else { return }
+//
+//            var isFinal = false
+//
+//            if let result = result {
+//                // Update the text view with the results
+//                self.recognizedUtterance(result.bestTranscription.formattedString)
+//                isFinal = result.isFinal
+//            }
+//
+//            if error != nil || isFinal {
+//                // Stop recognizing speech if there is a problem.
+//                self.audioEngine.stop()
+//                inputNode.removeTap(onBus: 0)
+//
+//                self.recognitionRequest = nil
+//                self.recognitionTask = nil
+//                if let error {
+//                    self.recognitionStatus(.stopped(.failure(error)))
+//                } else {
+//                    self.recognitionStatus(.stopped(.success(())))
+//                }
+//
+//            }
+//        }
+//
+//        // Configure the microphone input.
+//        let recordingFormat = inputNode.outputFormat(forBus: 0)
+//        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [recordedData] (buffer: AVAudioPCMBuffer, _) in
+//            recordedData(buffer)
+//            recognitionRequest.append(buffer)
+//        }
+//
+//        audioEngine.prepare()
+//        try audioEngine.start()
+//        recognitionStatus(.recording)
     }
 
     func stopRecording() {
