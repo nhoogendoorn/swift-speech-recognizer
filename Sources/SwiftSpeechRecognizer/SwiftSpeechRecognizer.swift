@@ -193,30 +193,36 @@ public extension SwiftSpeechRecognizer {
         recognizer?.defaultTaskHint = .dictation
         engine.speechRecognizer = recognizer
 
-        let authorizationStatus = AsyncStream { continuation in
-            engine.authorizationStatus = { continuation.yield($0) }
+        let authorizationStatus: AsyncStream<SFSpeechRecognizerAuthorizationStatus> = AsyncStream { continuation in
+            continuation.finish()
+//            engine.authorizationStatus = { continuation.yield($0) }
         }
-        let recognizedUtterance = AsyncStream { continuation in
-            engine.recognizedUtterance = { continuation.yield($0) }
+        let recognizedUtterance: AsyncStream<String?> = AsyncStream { continuation in
+            continuation.finish()
+//            engine.recognizedUtterance = { continuation.yield($0) }
         }
-        let recognitionStatus = AsyncStream { continuation in
-            engine.recognitionStatus = { continuation.yield($0) }
+        let recognitionStatus: AsyncStream<SpeechRecognitionStatus> = AsyncStream { continuation in
+            continuation.finish()
+//            engine.recognitionStatus = { continuation.yield($0) }
         }
-        let isRecognitionAvailable = AsyncStream { continuation in
-            engine.isRecognitionAvailable = { continuation.yield($0) }
+        let isRecognitionAvailable: AsyncStream<Bool> = AsyncStream { continuation in
+            continuation.finish()
+//            engine.isRecognitionAvailable = { continuation.yield($0) }
         }
-        let newUtterance = AsyncStream { continuation in
-            Task {
-                var lastUtterance: String? = nil
-                for await utterance in recognizedUtterance.compactMap({ $0 }) where lastUtterance != utterance {
-                    continuation.yield(utterance)
-                    lastUtterance = utterance
-                }
-            }
+        let newUtterance: AsyncStream<String> = AsyncStream { continuation in
+            continuation.finish()
+//            Task {
+//                var lastUtterance: String? = nil
+//                for await utterance in recognizedUtterance.compactMap({ $0 }) where lastUtterance != utterance {
+//                    continuation.yield(utterance)
+//                    lastUtterance = utterance
+//                }
+//            }
         }
 
-        let recordedData = AsyncStream { continuation in
-            engine.recordedData = { continuation.yield($0) }
+        let recordedData: AsyncStream<AVAudioPCMBuffer> = AsyncStream { continuation in
+            continuation.finish()
+//            engine.recordedData = { continuation.yield($0) }
         }
 
         return Self(

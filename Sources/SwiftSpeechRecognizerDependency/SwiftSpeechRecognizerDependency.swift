@@ -112,7 +112,7 @@ extension SwiftSpeechRecognizer {
 }
 
 private enum SwiftSpeechRecognizerDependencyKey: DependencyKey {
-    static let liveValue = SwiftSpeechRecognizer.live
+    static let liveValue = SwiftSpeechRecognizer.live(locale: .current)
     static let testValue = SwiftSpeechRecognizer.test
     static let previewValue = SwiftSpeechRecognizer.preview
 }
