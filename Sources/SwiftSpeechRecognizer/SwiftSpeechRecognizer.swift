@@ -93,9 +93,9 @@ private final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, S
     private var recognitionTask: SFSpeechRecognitionTask?
 
     func requestAuthorization() {
-        SFSpeechRecognizer.requestAuthorization { @MainActor [weak self] authorizationStatus in
-            self?.authorizationStatus(authorizationStatus)
-        }
+//        SFSpeechRecognizer.requestAuthorization { @MainActor [weak self] authorizationStatus in
+//            self?.authorizationStatus(authorizationStatus)
+//        }
     }
 
     func startRecording() throws {
