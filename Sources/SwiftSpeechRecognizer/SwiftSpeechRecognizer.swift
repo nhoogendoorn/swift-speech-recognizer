@@ -195,12 +195,12 @@ public extension SwiftSpeechRecognizer {
 //        engine.speechRecognizer = recognizer
 
         let authorizationStatus: AsyncStream<SFSpeechRecognizerAuthorizationStatus> = AsyncStream { continuation in
-            continuation.finish()
-//            engine.authorizationStatus = { continuation.yield($0) }
+//            continuation.finish()
+            engine.authorizationStatus = { continuation.yield($0) }
         }
         let recognizedUtterance: AsyncStream<String?> = AsyncStream { continuation in
-            continuation.finish()
-//            engine.recognizedUtterance = { continuation.yield($0) }
+//            continuation.finish()
+            engine.recognizedUtterance = { continuation.yield($0) }
         }
         let recognitionStatus: AsyncStream<SpeechRecognitionStatus> = AsyncStream { continuation in
             continuation.finish()
