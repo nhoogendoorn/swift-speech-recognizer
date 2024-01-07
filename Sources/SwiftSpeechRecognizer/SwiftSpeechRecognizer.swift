@@ -21,7 +21,7 @@ public struct SwiftSpeechRecognizer {
     public var isRecognitionAvailable: () -> AsyncStream<Bool>
 
     /// Shortcut to access with ease to the received new utterance (already filtered)
-//    public var newUtterance: () -> AsyncStream<String>
+    public var newUtterance: () -> AsyncStream<String>
 
     /// Returns a chunk of recorded data.
     public var newBuffer: () -> AsyncStream<AVAudioPCMBuffer>
@@ -43,7 +43,7 @@ public struct SwiftSpeechRecognizer {
         newBuffer: @escaping () -> AsyncStream<AVAudioPCMBuffer>,
         recognitionStatus: @escaping () -> AsyncStream<SpeechRecognitionStatus>,
         isRecognitionAvailable: @escaping () -> AsyncStream<Bool>,
-//        newUtterance: @escaping () -> AsyncStream<String>,
+        newUtterance: @escaping () -> AsyncStream<String>,
         requestAuthorization: @escaping () -> Void,
         startRecording: @escaping () throws -> Void,
         stopRecording: @escaping () -> Void
@@ -52,7 +52,7 @@ public struct SwiftSpeechRecognizer {
         self.recognizedUtterance = recognizedUtterance
         self.recognitionStatus = recognitionStatus
         self.isRecognitionAvailable = isRecognitionAvailable
-//        self.newUtterance = newUtterance
+        self.newUtterance = newUtterance
         self.requestAuthorization = requestAuthorization
         self.startRecording = startRecording
         self.stopRecording = stopRecording
@@ -93,7 +93,7 @@ private final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, S
     private var recognitionTask: SFSpeechRecognitionTask?
 
     func requestAuthorization() {
-        SFSpeechRecognizer.requestAuthorization { [weak self] authorizationStatus in
+        SFSpeechRecognizer.requestAuthorization { @MainActor [weak self] authorizationStatus in
             self?.authorizationStatus(authorizationStatus)
         }
     }
@@ -129,7 +129,8 @@ private final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, S
 
         // Create a recognition task for the speech recognition session.
         // Keep a reference to the task so that it can be canceled.
-        recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { [weak self] result, error in
+        recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) {
+            @MainActor [weak self] result, error in
             guard let self = self else { return }
 
             var isFinal = false
@@ -199,15 +200,15 @@ public extension SwiftSpeechRecognizer {
         let isRecognitionAvailable = AsyncStream { continuation in
             engine.isRecognitionAvailable = { continuation.yield($0) }
         }
-//        let newUtterance = AsyncStream { continuation in
-//            Task {
-//                var lastUtterance: String? = nil
-//                for await utterance in recognizedUtterance.compactMap({ $0 }) where lastUtterance != utterance {
-//                    continuation.yield(utterance)
-//                    lastUtterance = utterance
-//                }
-//            }
-//        }
+        let newUtterance = AsyncStream { continuation in
+            Task {
+                var lastUtterance: String? = nil
+                for await utterance in recognizedUtterance.compactMap({ $0 }) where lastUtterance != utterance {
+                    continuation.yield(utterance)
+                    lastUtterance = utterance
+                }
+            }
+        }
 
         let recordedData = AsyncStream { continuation in
             engine.recordedData = { continuation.yield($0) }
@@ -219,7 +220,7 @@ public extension SwiftSpeechRecognizer {
             newBuffer: { recordedData },
             recognitionStatus: { recognitionStatus },
             isRecognitionAvailable: { isRecognitionAvailable },
-//            newUtterance: { newUtterance },
+            newUtterance: { newUtterance },
             requestAuthorization: { engine.requestAuthorization() },
             startRecording: { try engine.startRecording() },
             stopRecording: { engine.stopRecording() }
@@ -240,15 +241,15 @@ public extension SwiftSpeechRecognizer {
         let isRecognitionAvailable = AsyncStream { continuation in
             engine.isRecognitionAvailable = { continuation.yield($0) }
         }
-//        let newUtterance = AsyncStream { continuation in
-//            Task {
-//                var lastUtterance: String? = nil
-//                for await utterance in recognizedUtterance.compactMap({ $0 }) where lastUtterance != utterance {
-//                    continuation.yield(utterance)
-//                    lastUtterance = utterance
-//                }
-//            }
-//        }
+        let newUtterance = AsyncStream { continuation in
+            Task {
+                var lastUtterance: String? = nil
+                for await utterance in recognizedUtterance.compactMap({ $0 }) where lastUtterance != utterance {
+                    continuation.yield(utterance)
+                    lastUtterance = utterance
+                }
+            }
+        }
 
         let recordedData = AsyncStream { continuation in
             engine.recordedData = { continuation.yield($0) }
@@ -260,7 +261,7 @@ public extension SwiftSpeechRecognizer {
             newBuffer: { recordedData },
             recognitionStatus: { recognitionStatus },
             isRecognitionAvailable: { isRecognitionAvailable },
-//            newUtterance: { newUtterance },
+            newUtterance: { newUtterance },
             requestAuthorization: { engine.requestAuthorization() },
             startRecording: { try engine.startRecording() },
             stopRecording: { engine.stopRecording() }

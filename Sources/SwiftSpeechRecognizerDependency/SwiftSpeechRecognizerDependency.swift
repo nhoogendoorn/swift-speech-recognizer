@@ -14,7 +14,7 @@ extension SwiftSpeechRecognizer {
         newBuffer: unimplemented("SwiftSpeechRecognizer.newBuffer"),
         recognitionStatus: unimplemented("SwiftSpeechRecognizer.recognitionStatus"),
         isRecognitionAvailable: unimplemented("SwiftSpeechRecognizer.isRecognitionAvailable"),
-//        newUtterance: unimplemented("SwiftSpeechRecognizer.newUtterance"),
+        newUtterance: unimplemented("SwiftSpeechRecognizer.newUtterance"),
         requestAuthorization: unimplemented("SwiftSpeechRecognizer.requestAuthorization"),
         startRecording: unimplemented("SwiftSpeechRecognizer.startRecording"),
         stopRecording: unimplemented("SwiftSpeechRecognize.stopRecordingr")
@@ -103,7 +103,7 @@ extension SwiftSpeechRecognizer {
             newBuffer: { newBuffer },
             recognitionStatus: { recognitionStatus },
             isRecognitionAvailable: { isRecognitionAvailable },
-//            newUtterance: { newUtterance },
+            newUtterance: { newUtterance },
             requestAuthorization: requestAuthorization,
             startRecording: startRecording,
             stopRecording: stopRecording
@@ -183,11 +183,11 @@ struct SwiftSpeechDependencyPreviews: PreviewProvider {
                 }
             }
 
-//            Task {
-//                for await newUtterance in speechRecognizer.newUtterance() {
-//                    self.newUtterance = newUtterance
-//                }
-//            }
+            Task {
+                for await newUtterance in speechRecognizer.newUtterance() {
+                    self.newUtterance = newUtterance
+                }
+            }
 
             if authorizationStatus != .authorized {
                 speechRecognizer.requestAuthorization()
