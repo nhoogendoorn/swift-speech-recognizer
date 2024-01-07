@@ -25,6 +25,8 @@ public protocol SpeechRecognitionEngine {
     /// Shortcut to access with ease to the published new utterance (already filtered)
     var newUtterancePublisher: AnyPublisher<String, Never> { get }
 
+    var newAudioBuffer: AnyPublisher<AVAudioPCMBuffer?, Never> { get }
+
     /// Ask user if you can use Microphone for Speech Recognition
     /// You'll need to subscribe to `authorizationStatusPublisher` to know the user choice
     func requestAuthorization()
@@ -42,6 +44,7 @@ public final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, SF
     @Published var authorizationStatus: SFSpeechRecognizerAuthorizationStatus?
     @Published var recognizedUtterance: String?
     @Published var recognitionStatus: SpeechRecognitionStatus = .notStarted
+    @Published var audioBuffer: AVAudioPCMBuffer?
 
     /// Whenever the availability of speech recognition services changes, this value will change
     /// For instance if the internet connection is lost, isRecognitionAvailable will change to `false`
@@ -174,5 +177,9 @@ public extension SpeechRecognitionSpeechEngine {
             .removeDuplicates()
             .compactMap({ $0 })
             .eraseToAnyPublisher()
+    }
+
+    var newAudioBuffer: AnyPublisher<AVAudioPCMBuffer?, Never> {
+        $audioBuffer.eraseToAnyPublisher()
     }
 }
