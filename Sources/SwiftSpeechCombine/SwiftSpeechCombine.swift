@@ -38,31 +38,31 @@ public protocol SpeechRecognitionEngine {
 }
 
 // See: https://developer.apple.com/documentation/speech/recognizing_speech_in_live_audio
-public final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, SFSpeechRecognizerDelegate, SpeechRecognitionEngine {
-    @Published var authorizationStatus: SFSpeechRecognizerAuthorizationStatus?
-    @Published var recognizedUtterance: String?
-    @Published var recognitionStatus: SpeechRecognitionStatus = .notStarted
-
-    /// Whenever the availability of speech recognition services changes, this value will change
-    /// For instance if the internet connection is lost, isRecognitionAvailable will change to `false`
-    @Published var isRecognitionAvailable: Bool = false
-
-    private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-GB"))
-    private let audioEngine = AVAudioEngine()
-    private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
-    private var recognitionTask: SFSpeechRecognitionTask?
-
-    public override init() { }
-
-    public func requestAuthorization() {
-        SFSpeechRecognizer.requestAuthorization { [weak self] authorizationStatus in
-            DispatchQueue.main.async { [weak self] in
-                self?.authorizationStatus = authorizationStatus
-            }
-        }
-    }
-
-    public func startRecording() throws {
+//public final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, SFSpeechRecognizerDelegate, SpeechRecognitionEngine {
+//    @Published var authorizationStatus: SFSpeechRecognizerAuthorizationStatus?
+//    @Published var recognizedUtterance: String?
+//    @Published var recognitionStatus: SpeechRecognitionStatus = .notStarted
+//
+//    /// Whenever the availability of speech recognition services changes, this value will change
+//    /// For instance if the internet connection is lost, isRecognitionAvailable will change to `false`
+//    @Published var isRecognitionAvailable: Bool = false
+//
+//    private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-GB"))
+//    private let audioEngine = AVAudioEngine()
+//    private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
+//    private var recognitionTask: SFSpeechRecognitionTask?
+//
+//    public override init() { }
+//
+//    public func requestAuthorization() {
+//        SFSpeechRecognizer.requestAuthorization { [weak self] authorizationStatus in
+//            DispatchQueue.main.async { [weak self] in
+//                self?.authorizationStatus = authorizationStatus
+//            }
+//        }
+//    }
+//
+//    public func startRecording() throws {
 //        guard !audioEngine.isRunning
 //        else { return stopRecording() }
 //
@@ -131,48 +131,48 @@ public final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, SF
 //        audioEngine.prepare()
 //        try audioEngine.start()
 //        recognitionStatus = .recording
-    }
-
-    public func stopRecording() {
-        if audioEngine.isRunning {
-            audioEngine.stop()
-            recognitionRequest?.endAudio()
-            recognitionStatus = .stopping
-        } else {
-            recognitionStatus = .stopped(.success(()))
-        }
-    }
-}
-
-// MARK: - SFSpeechRecognizerDelegate
-public extension SpeechRecognitionSpeechEngine {
-    func speechRecognizer(_ speechRecognizer: SFSpeechRecognizer, availabilityDidChange available: Bool) {
-        isRecognitionAvailable = available
-    }
-}
-
-// MARK: - SpeechRecognitionEngine
-public extension SpeechRecognitionSpeechEngine {
-    var authorizationStatusPublisher: AnyPublisher<SFSpeechRecognizerAuthorizationStatus?, Never> {
-        $authorizationStatus.eraseToAnyPublisher()
-    }
-
-    var recognizedUtterancePublisher: AnyPublisher<String?, Never> {
-        $recognizedUtterance.eraseToAnyPublisher()
-    }
-
-    var recognitionStatusPublisher: AnyPublisher<SpeechRecognitionStatus, Never> {
-        $recognitionStatus.eraseToAnyPublisher()
-    }
-
-    var isRecognitionAvailablePublisher: AnyPublisher<Bool, Never> {
-        $isRecognitionAvailable.eraseToAnyPublisher()
-    }
-
-    var newUtterancePublisher: AnyPublisher<String, Never> {
-        $recognizedUtterance
-            .removeDuplicates()
-            .compactMap({ $0 })
-            .eraseToAnyPublisher()
-    }
-}
+//    }
+//
+//    public func stopRecording() {
+//        if audioEngine.isRunning {
+//            audioEngine.stop()
+//            recognitionRequest?.endAudio()
+//            recognitionStatus = .stopping
+//        } else {
+//            recognitionStatus = .stopped(.success(()))
+//        }
+//    }
+//}
+//
+//// MARK: - SFSpeechRecognizerDelegate
+//public extension SpeechRecognitionSpeechEngine {
+//    func speechRecognizer(_ speechRecognizer: SFSpeechRecognizer, availabilityDidChange available: Bool) {
+//        isRecognitionAvailable = available
+//    }
+//}
+//
+//// MARK: - SpeechRecognitionEngine
+//public extension SpeechRecognitionSpeechEngine {
+//    var authorizationStatusPublisher: AnyPublisher<SFSpeechRecognizerAuthorizationStatus?, Never> {
+//        $authorizationStatus.eraseToAnyPublisher()
+//    }
+//
+//    var recognizedUtterancePublisher: AnyPublisher<String?, Never> {
+//        $recognizedUtterance.eraseToAnyPublisher()
+//    }
+//
+//    var recognitionStatusPublisher: AnyPublisher<SpeechRecognitionStatus, Never> {
+//        $recognitionStatus.eraseToAnyPublisher()
+//    }
+//
+//    var isRecognitionAvailablePublisher: AnyPublisher<Bool, Never> {
+//        $isRecognitionAvailable.eraseToAnyPublisher()
+//    }
+//
+//    var newUtterancePublisher: AnyPublisher<String, Never> {
+//        $recognizedUtterance
+//            .removeDuplicates()
+//            .compactMap({ $0 })
+//            .eraseToAnyPublisher()
+//    }
+//}
