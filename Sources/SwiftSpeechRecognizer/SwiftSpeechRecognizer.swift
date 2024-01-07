@@ -187,6 +187,63 @@ private final class SpeechRecognitionSpeechEngine: NSObject, ObservableObject, S
 public extension SwiftSpeechRecognizer {
 
 //    static private
+    init(locale: Locale) {
+        let engine = SpeechRecognitionSpeechEngine(locale: .current)
+//        let recognizer = SFSpeechRecognizer(locale: locale)
+//        recognizer?.defaultTaskHint = .dictation
+//        engine.speechRecognizer = recognizer
+
+        let authorizationStatus: AsyncStream<SFSpeechRecognizerAuthorizationStatus> = AsyncStream { continuation in
+//            continuation.finish()
+            engine.authorizationStatus = { continuation.yield($0) }
+        }
+        let recognizedUtterance: AsyncStream<String?> = AsyncStream { continuation in
+//            continuation.finish()
+            engine.recognizedUtterance = { continuation.yield($0) }
+        }
+        let recognitionStatus: AsyncStream<SpeechRecognitionStatus> = AsyncStream { continuation in
+            continuation.finish()
+//            engine.recognitionStatus = { continuation.yield($0) }
+        }
+        let isRecognitionAvailable: AsyncStream<Bool> = AsyncStream { continuation in
+            continuation.finish()
+//            engine.isRecognitionAvailable = { continuation.yield($0) }
+        }
+        let newUtterance: AsyncStream<String> = AsyncStream { continuation in
+            continuation.finish()
+//            Task {
+//                var lastUtterance: String? = nil
+//                for await utterance in recognizedUtterance.compactMap({ $0 }) where lastUtterance != utterance {
+//                    continuation.yield(utterance)
+//                    lastUtterance = utterance
+//                }
+//            }
+        }
+
+        let recordedData: AsyncStream<AVAudioPCMBuffer> = AsyncStream { continuation in
+            continuation.finish()
+//            engine.recordedData = { continuation.yield($0) }
+        }
+
+        self.init(
+            authorizationStatus: { authorizationStatus },
+            recognizedUtterance: { recognizedUtterance },
+            newBuffer: { recordedData },
+            recognitionStatus: { recognitionStatus },
+            isRecognitionAvailable: { isRecognitionAvailable },
+            newUtterance: { newUtterance },
+            requestAuthorization: {
+//                engine.requestAuthorization()
+            },
+            startRecording: {
+//                try engine.startRecording()
+            },
+            stopRecording: {
+//                engine.stopRecording()
+            }
+        )
+
+    }
 
     static func live(locale: Locale) -> Self {
         let engine = SpeechRecognitionSpeechEngine(locale: .current)
